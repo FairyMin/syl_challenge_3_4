@@ -44,29 +44,54 @@ def main():
     
     #集合存储ip信息
     ip_set = set()
+    url_set = set()
+
     total_ipdict = {}
+    total_urldict = {}
 
     for info in logs:
-
         ip_set.add(info[0])
-        
-        time_info =  info[1].split("+",1)
-
-        time_info1 = time_info[0].split(":",1)
-        
-        print(time_info1)
+        url_set.add(info[2])
 
     #创建字典将数据存入内存
     for i in ip_set:
         total_ipdict.setdefault(i,{})
         total_ipdict[i]['times'] = 0
-        total_ipdict[i]['404'] = 0
+    #    
+    for ui in url_set:
+        total_urldict.setdefault(ui,{})
+        total_urldict[ui]['404'] = 0
         
     #计算访问次数最多的ip 以及 访问状态为404次数最多的ip  以及相应的访问次数
+    cons = {
+            "Jan":"1",
+            "Feb":"2",
+            "Mar":"3",
+            "Apr":"4",
+            "May":"5",
+            "Jun":"6",
+            "Jul":"7",
+            "Aug":"8",
+            "Sep":"9",
+            "Oct":"10",
+            "Nov":"11",
+            "Dec":"12"
+            }
     for j in logs:
-        total_ipdict[j[0]]['times'] += 1
+        #获得时间time1 day/mon/year:hour:min:sec
+
+        ti = j[1].split('+',1)
+        tif = ti[0]
+        for mon in cons.keys():
+            if mon in tif:
+                time0 = tif.replace(mon,cons[mon])
+                time1 = datetime.strptime(time0.strip(),"%d/%m/%Y:%H:%M:%S")
+
+        if time1.year == 2017 and time1.month == 1 and time1.day == 11:
+            total_ipdict[j[0]]['times'] += 1
+        
         if j[3] == '404':
-            total_ipdict[j[0]]['404'] += 1
+            total_urldict[j[2]]['404'] += 1
 
     m_key = ""
     m_value = 0
@@ -79,9 +104,10 @@ def main():
             m_key = k
             m_value = v['times']
 
-        if v['404'] > value_nf:
-            value_nf = v['404']
-            key_nf = k
+    for uk,uv in total_urldict.items():
+        if uv['404'] > value_nf:
+            value_nf = uv['404']
+            key_nf = uk
 
     ip_dict[m_key] = m_value
 
